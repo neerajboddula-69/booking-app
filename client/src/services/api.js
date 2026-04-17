@@ -9,13 +9,30 @@ function normalizeApiBase(value) {
     normalized = `https://${normalized}`;
   }
 
-  // Remove trailing slashes — do NOT append /api; all paths already include /api/
-  return normalized.replace(/\/+$/, "");
+  normalized = normalized.replace(/\/+$/, "");
+
+  if (!normalized.endsWith("/api")) {
+    normalized = `${normalized}/api`;
+  }
+
+  return normalized;
 }
 
-const apiBase =
-  normalizeApiBase(import.meta.env.VITE_API_BASE_URL) ||
-  "http://localhost:4000";
+function getDefaultApiBase() {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+
+    if (host.includes("vercel.app")) {
+      return "https://booking-app-1-6znx.onrender.com/api";
+    }
+
+    return `${window.location.origin}/api`;
+  }
+
+  return "http://localhost:4000/api";
+}
+
+const apiBase = normalizeApiBase(import.meta.env.VITE_API_BASE_URL) || getDefaultApiBase();
 
 export async function api(path, options = {}) {
   const response = await fetch(`${apiBase}${path}`, {

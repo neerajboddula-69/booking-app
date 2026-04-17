@@ -124,6 +124,8 @@ Backend health check:
 /api/health
 ```
 
+If you deploy the React frontend to Vercel, this repo also includes [vercel.json](C:\Users\neera\Downloads\project\vercel.json) so routes like `/auth` and `/dashboard` rewrite correctly to `index.html`.
+
 ## Backend
 
 - URL: `http://localhost:4000`
