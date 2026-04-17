@@ -83,6 +83,47 @@ npm install --prefix client
   - `/booking` appointment booking flow
   - `/dashboard` customer or admin dashboard
 
+## Render Deployment
+
+If you deploy frontend and backend separately on Render, set this frontend environment variable in the Render dashboard:
+
+```env
+VITE_API_BASE_URL=https://your-backend-service.onrender.com/api
+```
+
+If frontend and backend are served from the same domain, the app will automatically use `/api`.
+
+This repo now includes a Render blueprint in [render.yaml](C:\Users\neera\Downloads\project\render.yaml).
+
+Recommended Render setup:
+
+1. Push this project to GitHub.
+2. In Render, choose `New +` -> `Blueprint`.
+3. Select your GitHub repository.
+4. Render will create:
+   - `appointment-booking-api` for Express
+   - `appointment-booking-client` for React
+5. In the backend service, add your real environment values:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+MONGODB_DB=appointment_booking
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=yourgmail@gmail.com
+SMTP_PASS=your_16_digit_app_password
+SMTP_FROM=yourgmail@gmail.com
+```
+
+6. Redeploy both services after saving env vars.
+
+Backend health check:
+
+```text
+/api/health
+```
+
 ## Backend
 
 - URL: `http://localhost:4000`

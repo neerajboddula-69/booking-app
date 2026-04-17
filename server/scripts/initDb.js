@@ -1,8 +1,26 @@
+import bcrypt from "bcryptjs";
 import { closeDatabase, getCollections } from "../db.js";
 import { admins, appointments, chatMessages, customers, notifications, providers, services, unavailability, waitlist } from "../data/seedData.js";
 
+const SALT_ROUNDS = 10;
+
+async function hashUsers(users) {
+  return Promise.all(
+    users.map(async (user) => ({
+      ...user,
+      password: await bcrypt.hash(user.password, SALT_ROUNDS)
+    }))
+  );
+}
+
 async function run() {
   const collections = await getCollections();
+
+  // Hash passwords for seed users
+  const [hashedCustomers, hashedAdmins] = await Promise.all([
+    hashUsers(customers),
+    hashUsers(admins)
+  ]);
 
   await Promise.all([
     collections.admins.deleteMany({}),
@@ -17,8 +35,8 @@ async function run() {
   ]);
 
   await Promise.all([
-    collections.admins.insertMany(admins),
-    collections.customers.insertMany(customers),
+    collections.admins.insertMany(hashedAdmins),
+    collections.customers.insertMany(hashedCustomers),
     collections.providers.insertMany(providers),
     collections.services.insertMany(services),
     collections.unavailability.insertMany(unavailability),
@@ -34,6 +52,10 @@ async function run() {
   await collections.chatMessages.createIndex({ participantRole: 1, participantId: 1, providerId: 1, createdAt: 1 });
 
   console.log("MongoDB seed data applied successfully.");
+  console.log("");
+  console.log("Test credentials (passwords stored as bcrypt hashes):");
+  console.log("  Customer → email: customer@example.com  password: customer123");
+  console.log("  Admin    → email: admin@example.com     password: admin123");
 }
 
 run()

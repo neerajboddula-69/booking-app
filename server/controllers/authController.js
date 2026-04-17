@@ -1,16 +1,28 @@
+import bcrypt from "bcryptjs";
 import { getCollections } from "../db.js";
 import { createId } from "../services/bookingService.js";
-import { loadState } from "../services/stateService.js";
+
+const SALT_ROUNDS = 10;
 
 export async function login(req, res) {
   try {
     const { role, email, password } = req.body;
-    const state = await loadState();
+
+    if (!role || !email || !password) {
+      return res.status(400).json({ message: "Role, email and password are required." });
+    }
+
+    const collections = await getCollections();
     const normalizedEmail = String(email).trim().toLowerCase();
-    const source = role === "admin" ? state.admins : state.customers;
-    const user = source.find((entry) => entry.email === normalizedEmail && entry.password === password);
+    const collection = role === "admin" ? collections.admins : collections.customers;
+    const user = await collection.findOne({ email: normalizedEmail }, { projection: { _id: 0 } });
 
     if (!user) {
+      return res.status(401).json({ message: "Invalid login details." });
+    }
+
+    const passwordMatch = await bcrypt.compare(String(password), user.password);
+    if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid login details." });
     }
 
@@ -24,7 +36,8 @@ export async function login(req, res) {
         title: user.title || "Customer"
       }
     });
-  } catch {
+  } catch (error) {
+    console.error("Login error:", error);
     return res.status(500).json({ message: "Unable to complete login." });
   }
 }
@@ -46,13 +59,15 @@ export async function registerCustomer(req, res) {
       return res.status(409).json({ message: "An account with this email already exists." });
     }
 
+    const hashedPassword = await bcrypt.hash(String(password), SALT_ROUNDS);
+
     const customer = {
       id: createId("cust"),
       role: "customer",
       name: String(name).trim(),
       email: normalizedEmail,
       phone: String(phone).trim(),
-      password,
+      password: hashedPassword,
       preferredProviders: [],
       preferredWindow: ["09:00", "17:00"]
     };
@@ -70,7 +85,8 @@ export async function registerCustomer(req, res) {
         title: "Customer"
       }
     });
-  } catch {
+  } catch (error) {
+    console.error("Register customer error:", error);
     return res.status(500).json({ message: "Unable to create customer account." });
   }
 }
@@ -92,13 +108,15 @@ export async function registerAdmin(req, res) {
       return res.status(409).json({ message: "An account with this email already exists." });
     }
 
+    const hashedPassword = await bcrypt.hash(String(password), SALT_ROUNDS);
+
     const admin = {
       id: createId("admin"),
       role: "admin",
       name: String(name).trim(),
       email: normalizedEmail,
       phone: String(phone).trim(),
-      password,
+      password: hashedPassword,
       title: "Booking Administrator"
     };
 
@@ -115,7 +133,8 @@ export async function registerAdmin(req, res) {
         title: admin.title
       }
     });
-  } catch {
+  } catch (error) {
+    console.error("Register admin error:", error);
     return res.status(500).json({ message: "Unable to create admin account." });
   }
 }

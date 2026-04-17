@@ -1,0 +1,21 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "Full-stack MERN starter project using React for the frontend, Express for the backend, and MongoDB for persistent storage with separate frontend pages/components/services and separate backend routes/controllers/services/data.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neerajboddula-69/appointment-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/neerajboddula-69/appointment-app/issues"
+  },
+  "homepage": "https://github.com/neerajboddula-69/appointment-app#readme"
+}
